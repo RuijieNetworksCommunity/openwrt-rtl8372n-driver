@@ -1,10 +1,7 @@
-#include "rtk_error.h"
-#include "rtl8372n_asicdrv.h"
-#include "rtl8372n_asicdrv_vlan.h"
-#include "rtl8372n_switch.h"
-
-#include <linux/printk.h>
-
+#include "include/rtk_error.h"
+#include "include/rtl8372n_asicdrv.h"
+#include "include/rtl8372n_asicdrv_vlan.h"
+#include "include/rtl8372n_switch.h"
 
 ret_t rtl8372n_setAsicVlan4kEntry(rtl8372n_user_vlan4kentry *vlan_entry)
 {
@@ -33,8 +30,6 @@ ret_t rtl8372n_setAsicVlan4kEntry(rtl8372n_user_vlan4kentry *vlan_entry)
                             ((vlan_entry->fid & 0xF) << 20) | 
                             ((vlan_entry->untag & 0x3FF) << 10) | 
                              (vlan_entry->mbr & 0x3FF);
-
-    printk("setAsicVlan4kEntry reg_value: %016x\n",reg_value);
 
     result = rtl8372n_setAsicReg(0x5CB8u, reg_value);
     if(result != RT_ERR_OK) return result;

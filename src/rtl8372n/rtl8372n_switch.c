@@ -1,10 +1,11 @@
-#include <rtk_error.h>
+#include "include/rtk_error.h"
+#include "include/rtl8372n_switch.h"
+#include "include/rtl8372n_asicdrv.h"
+#include "include/rtl8372n_asicdrv_vlan.h"
+#include "include/rtl8372n_asicdrv_phy.h"
+#include "include/rtl8372n_asicdrv_sds.h"
+
 #include <linux/kernel.h>
-#include "rtl8372n_switch.h"
-#include "rtl8372n_asicdrv.h"
-#include "rtl8372n_asicdrv_vlan.h"
-#include "rtl8372n_asicdrv_phy.h"
-#include "rtl8372n_asicdrv_sds.h"
 
 static init_state_t init_state = INIT_NOT_COMPLETED;
 

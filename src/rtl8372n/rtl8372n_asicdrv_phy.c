@@ -1,7 +1,7 @@
-#include "rtk_error.h"
-#include "rtl8372n_asicdrv_phy.h"
-#include "rtl8372n_switch.h"
-#include "rtl8372n_asicdrv.h"
+#include "include/rtk_error.h"
+#include "include/rtl8372n_asicdrv_phy.h"
+#include "include/rtl8372n_switch.h"
+#include "include/rtl8372n_asicdrv.h"
 
 // 寄存器地址
 #define PHY_PORT_SELECT_REG  0x6438  // PHY端口选择寄存器

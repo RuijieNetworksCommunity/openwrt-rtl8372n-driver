@@ -1,5 +1,5 @@
-#include <rtl8372n_asicdrv.h>
-#include <rtl8372n_smi.h>
+#include "include/rtl8372n_asicdrv.h"
+#include "include/rtl8372n_smi.h"
 
 ret_t rtl8372n_setAsicRegBit(rtk_uint32 reg, rtk_uint32 bit, rtk_uint32 value)
 {

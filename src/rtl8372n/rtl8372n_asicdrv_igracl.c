@@ -1,7 +1,7 @@
-#include "rtk_error.h"
-#include "rtl8372n_asicdrv.h"
-#include "rtl8372n_asicdrv_igracl.h"
-#include "rtl8372n_switch.h"
+#include "include/rtk_error.h"
+#include "include/rtl8372n_asicdrv.h"
+#include "include/rtl8372n_asicdrv_igracl.h"
+#include "include/rtl8372n_switch.h"
 
 rtl8372n_acltemplate_t acl_template[5] = {
     {{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x4F}},

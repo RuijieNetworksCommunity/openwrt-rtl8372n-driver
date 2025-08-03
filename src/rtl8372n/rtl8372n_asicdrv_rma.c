@@ -1,7 +1,7 @@
-#include "rtk_error.h"
-#include "rtl8372n_asicdrv.h"
-#include "rtl8372n_asicdrv_rma.h"
-#include "rtl8372n_switch.h"
+#include "include/rtk_error.h"
+#include "include/rtl8372n_asicdrv.h"
+#include "include/rtl8372n_asicdrv_rma.h"
+#include "include/rtl8372n_switch.h"
 
 //放弃挣扎
 ret_t rtl8372n_asicRma_set(rtk_uint32 index, rtl8372n_rma_t *pRmacfg)

@@ -1,8 +1,7 @@
 
-#include <rtl8372n_types.h>
-#include <rtl8372n_smi.h>
-#include "rtk_error.h"
-#include <linux/kernel.h>
+#include "include/rtk_error.h"
+#include "include/rtl8372n_types.h"
+#include "include/rtl8372n_smi.h"
 
 /* MDC/MDIO, redefine/implement the following Macro */ /*carlos*/
 

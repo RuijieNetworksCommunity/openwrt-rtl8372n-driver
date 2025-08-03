@@ -1,7 +1,7 @@
-#include "rtk_error.h"
-#include "rtl8372n_asicdrv.h"
-#include "rtl8372n_asicdrv_eee.h"
-#include "rtl8372n_switch.h"
+#include "include/rtk_error.h"
+#include "include/rtl8372n_asicdrv.h"
+#include "include/rtl8372n_asicdrv_eee.h"
+#include "include/rtl8372n_switch.h"
 
 ret_t rtl8372n_eee_init(void)
 {

@@ -24,6 +24,14 @@
 
 // static struct rtk_gsw *_gsw;
 
+#ifndef SWITCH_PORT_SPEED_10000
+#define SWITCH_PORT_SPEED_10000 10000
+#endif
+
+#ifndef SWITCH_PORT_SPEED_2500
+#define SWITCH_PORT_SPEED_2500 2500
+#endif
+
 int rtl837x_sw_get_port_stats_u(struct switch_dev *dev, int port,struct switch_port_stats *stats)
 {
     struct rtk_gsw *gsw = container_of(dev, struct rtk_gsw, sw_dev);
@@ -277,8 +285,8 @@ static uint32_t convert_speed_code(uint32_t speed_code)
         case 1:   	return SWITCH_PORT_SPEED_100;
         case 2:     return SWITCH_PORT_SPEED_1000;
         case 3:   	return SWITCH_PORT_SPEED_UNKNOWN;
-        case 4:    	return 10000;
-        case 5:    	return 2500;
+        case 4:    	return SWITCH_PORT_SPEED_10000;
+        case 5:    	return SWITCH_PORT_SPEED_2500;
         default:                return 0; // 未知状态
     }
 }

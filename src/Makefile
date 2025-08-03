@@ -18,7 +18,4 @@ rtl8372n_gsw-objs += rtl8372n/rtl8372n_switch.o
 
 ccflags-y += -Werror -D_LITTLE_ENDIAN -DMDC_MDIO_OPERATION
 
-ccflags-y += -Idrivers/net/phy/rtl837x/rtl8372n/include
 ccflags-y += -Idrivers/net/phy/rtl837x/include
-ccflags-y += -Iinclude/linux/
-

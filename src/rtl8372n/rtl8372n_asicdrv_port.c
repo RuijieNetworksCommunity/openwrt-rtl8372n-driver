@@ -1,7 +1,7 @@
-#include "rtk_error.h"
-#include "rtl8372n_asicdrv.h"
-#include "rtl8372n_asicdrv_port.h"
-#include "rtl8372n_switch.h"
+#include "include/rtk_error.h"
+#include "include/rtl8372n_asicdrv.h"
+#include "include/rtl8372n_asicdrv_port.h"
+#include "include/rtl8372n_switch.h"
 
 ret_t rtl8372n_port_isolation_set(rtk_uint32 port, rtk_uint32 isolation_map)
 {

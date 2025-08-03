@@ -23,7 +23,6 @@ EXTRA_CFLAGS:= \
 	$(patsubst CONFIG_%, -DCONFIG_%=1, $(patsubst %=y,%,$(filter %=y,$(EXTRA_KCONFIG)))) \
 	-DVERSION=$(PKG_RELEASE) \
 	-I$(PKG_BUILD_DIR)/include \
-	-I$(PKG_BUILD_DIR)/rtl8372n/include
 
 MAKE_OPTS:=$(KERNEL_MAKE_FLAGS) \
 	M="$(PKG_BUILD_DIR)" \

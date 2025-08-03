@@ -1,7 +1,7 @@
-#include "rtk_error.h"
-#include "rtl8372n_asicdrv.h"
-#include "rtl8372n_asicdrv_cputag.h"
-#include "rtl8372n_switch.h"
+#include "include/rtk_error.h"
+#include "include/rtl8372n_asicdrv.h"
+#include "include/rtl8372n_asicdrv_cputag.h"
+#include "include/rtl8372n_switch.h"
 
 ret_t rtl8372n_cpuTag_tpid_set(rtk_uint32 tpid)
 {
