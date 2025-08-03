@@ -1,9 +1,10 @@
 include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
- 
+
 PKG_NAME:=rtl8372n_gsw
 PKG_RELEASE:=1
- 
+PKG_MAINTAINER:=air jinkela (air_jinkela@163.com)
+
 include $(INCLUDE_DIR)/package.mk
 
 define KernelPackage/$(PKG_NAME)
