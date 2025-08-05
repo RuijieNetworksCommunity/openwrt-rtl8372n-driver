@@ -5,7 +5,6 @@
 #include "include/rtl8372n_switch.h"
 
 #include <linux/delay.h>
-#include <linux/printk.h>
 
 void delay_loop(void){
     mdelay(10);
@@ -248,10 +247,9 @@ ret_t rtl8372n_sdsMode_set(rtk_uint32 sdsId, rtk_uint32 mode)
             return RT_ERR_CHIP_NOT_FOUND;
         }
     }
-    rtk_uint32 v10;
     rtk_uint32 v12;
     rtk_uint32 v13;
-    if(mode == 0x1f)
+    if(mode == RTL_SDS_MODE_OFF)
     {
     // CH0_MODE31_HANDLER:
         rtl8372n_sds_regbits_write(0, 0x20u, 0, 0x30u, 3);
@@ -269,7 +267,7 @@ ret_t rtl8372n_sdsMode_set(rtk_uint32 sdsId, rtk_uint32 mode)
         goto APPLY_CONFIG;
     }
 
-    if(mode != 0x1f && mode != 0x22 && mode !=0x21)
+    if(mode != RTL_SDS_MODE_OFF && mode != 0x22 && mode !=0x21)
     {
         rtl8372n_setAsicRegBit(0x7B20u, 0x15u, 0);
         delay_loop();
@@ -307,17 +305,13 @@ TGR_RESET_START:
         fw_reset_flow_tgr(sdsId);               // TGR 复位流程
 FINAL_DELAY:
         delay_loop();
-        return 0LL;
+        return RT_ERR_OK;
 FINAL_CONFIG:
         delay_loop();
-        if ( mode )                           // 根据模式执行最终复位流程
-            v10 = mode == 0x1A;
-        else
-            v10 = 1;
-        if ( v10 )
+        if ((mode == RTL_SDS_MODE_10GR) | (!mode))
             goto TGR_RESET_START;               // mode==0
         goto LABEL_33;
-    return 0LL;
+    return RT_ERR_OK;
 }
 
 ret_t rtl8372n_sdsMode_get(rtk_uint32 sdsId, rtk_uint32 *pMode)
@@ -340,30 +334,29 @@ ret_t rtl8372n_sdsMode_get(rtk_uint32 sdsId, rtk_uint32 *pMode)
     }
 
 
-    // 特殊模式13处理（USXGMII兼容模式）
-    if (bitfield1 == 0xD) { // 13 (0xD)
+    if (bitfield1 == RTL_SDS_MODE_QXGMII) { // 13 (0xD)
         if (bitfield2 == 0) {
-            *pMode = 0xD; // 标准模式13
+            *pMode = RTL_SDS_MODE_QXGMII;
             return RT_ERR_OK;
         } else if (bitfield2 == 2) {
-            *pMode = 0;   // 特殊兼容模式0
+            *pMode = 0;
             return RT_ERR_OK;
         } else {
-            return RT_ERR_FAILED;      // 无效的辅助位域值
+            return RT_ERR_FAILED;  
         }
     }
 
     // 预定义模式值处理
-    if (bitfield1 != 0x1A &&  // 26 (0x1A)
-        bitfield1 != 0x12 &&  // 18 (0x12)
-        bitfield1 != 0x16 &&  // 22 (0x16)
-        bitfield1 != 0x2  &&  // 2
-        bitfield1 != 0x4  &&  // 4
+    if (bitfield1 != RTL_SDS_MODE_10GR &&  // 26 (0x1A)
+        bitfield1 != RTL_SDS_MODE_HISGMII &&  // 18 (0x12)
+        bitfield1 != RTL_SDS_MODE_HSG &&  // 22 (0x16)
+        bitfield1 != RTL_SDS_MODE_SGMII  &&  // 2
+        bitfield1 != RTL_SDS_MODE_1000BX_FIBER  &&  // 4
         bitfield1 != 0x5)     // 5
     {
         // 特殊模式31处理
-        if (bitfield1 == 0x1F) { // 31 (0x1F)
-            *pMode = 0x1F;
+        if (bitfield1 == RTL_SDS_MODE_OFF) { // 31 (0x1F)
+            *pMode = RTL_SDS_MODE_OFF;
             return RT_ERR_OK;
         }
         
@@ -423,129 +416,40 @@ ret_t cfg_rl6637_sds_mode(rtk_uint8 phy_port, rtk_uint32 sds_mode)
 ret_t SDS_MODE_SET_SW(switch_chip_t chip_type, rtk_uint32 sdsId, rtk_uint32 mode)
 {
     // === RTL8224系列芯片特殊处理 ===
-    if (chip_type == CHIP_RTL8224N || chip_type == CHIP_RTL8224) { // 识别RTL8224系列芯片
-        /*  ***TODO**
-
-        // 步骤1: 配置模式寄存器
-        if (mode) {
-        // 1.1 特定配置模式
-        if (sdsId) {
-            // 通道1配置:
-            if (sdsId == 1) {
-            // 清除高位配置 (0x7B20寄存器的bits[20:16])
-            dal_rtl8224_top_regbits_write(0x7B20, 0x1F0000, 0);
-            // 设置模式值 (0x7B20寄存器的bits[9:5])
-            dal_rtl8224_top_regbits_write(0x7B20, 0x3E0, mode);
-            }
-        } else {
-            // 通道0配置:
-            // 清除高位配置 (0x7B20寄存器的bits[14:10])
-            dal_rtl8224_top_regbits_write(0x7B20, 0x7C00, 0);
-            // 设置模式值 (0x7B20寄存器的bits[4:0])
-            dal_rtl8224_top_regbits_write(0x7B20, 0x1F, mode);
-        }
-        } else {
-        // 1.2 默认配置模式
-        if (sdsId) {
-            // 通道1默认配置:
-            if (sdsId == 1) {
-            // 设置高位默认值 (0x7B20寄存器的bits[20:16]=2)
-            dal_rtl8224_top_regbits_write(0x7B20, 0x1F0000, 2);
-            // 设置默认模式值 (0x7B20寄存器的bits[9:5]=13)
-            dal_rtl8224_top_regbits_write(0x7B20, 0x3E0, 13);
-            }
-        } else {
-            // 通道0默认配置:
-            // 设置高位默认值 (0x7B20寄存器的bits[14:10]=2)
-            dal_rtl8224_top_regbits_write(0x7B20, 0x7C00, 2);
-            // 设置默认模式值 (0x7B20寄存器的bits[4:0]=13)
-            dal_rtl8224_top_regbits_write(0x7B20, 0x1F, 13);
-        }
-        }
-        
-        // 步骤2: 复位控制寄存器
-        // 复位bit15
-        dal_rtl8224_top_regbit_write(0x7B20, 0x15, 0);
-        // 复位bit16
-        dal_rtl8224_top_regbit_write(0x7B20, 0x16, 0);
-        
-        // 步骤3: 应用SerDes补丁
-        serdes_patch(chip_type, sdsId, mode);
-        
-        // 步骤4: SerDes配置序列 (17步)
-        // 4.1 配置bit[5:4] (0x30)
-        dal_rtl8224_sds_regbits_write(sdsId, 32, 0, 0x30, 3);
-        dal_rtl8224_sds_regbits_write(sdsId, 32, 0, 0x30, 1);
-        
-        // 4.2 配置bit[7:6] (0xC0)
-        dal_rtl8224_sds_regbits_write(sdsId, 32, 0, 0xC0, 1);
-        dal_rtl8224_sds_regbits_write(sdsId, 32, 0, 0xC0, 3);
-        
-        // 4.3 配置bit[11:10] (0xC00)
-        dal_rtl8224_sds_regbits_write(sdsId, 32, 0, 0xC00, 3);
-        dal_rtl8224_sds_regbits_write(sdsId, 32, 0, 0xC00, 1);
-        dal_rtl8224_sds_regbits_write(sdsId, 32, 0, 0xC00, 1); // 重复步骤
-        
-        // 4.4 修改bit[11:10]配置
-        dal_rtl8224_sds_regbits_write(sdsId, 32, 0, 0xC00, 3);
-        dal_rtl8224_sds_regbits_write(sdsId, 32, 0, 0xC00, 0);
-        
-        // 4.5 重新配置bit[7:6]
-        dal_rtl8224_sds_regbits_write(sdsId, 32, 0, 0xC0, 3);
-        dal_rtl8224_sds_regbits_write(sdsId, 32, 0, 0xC0, 1);
-        dal_rtl8224_sds_regbits_write(sdsId, 32, 0, 0xC0, 0);
-        
-        // 4.6 重新配置bit[5:4]
-        dal_rtl8224_sds_regbits_write(sdsId, 32, 0, 0x30, 1);
-        dal_rtl8224_sds_regbits_write(sdsId, 32, 0, 0x30, 3);
-        dal_rtl8224_sds_regbits_write(sdsId, 32, 0, 0x30, 0);
-        
-        // 4.7 特殊寄存器31配置
-        dal_rtl8224_sds_regbits_write(sdsId, 31, 0, 0xFFFF, 11);
-        dal_rtl8224_sds_regbits_write(sdsId, 31, 0, 0xFFFF, 0);
-        */
-        return RT_ERR_OK; // 成功
+    if(chip_type == CHIP_RTL8224 || chip_type == CHIP_RTL8224N)
+    {
+        // TODO
+        return 0;
     }
+
+    switch (sdsId)
+    {
+    case 0:
+        if(mode){
+            rtl8372n_setAsicRegBits(0x7B20u, 0x7C00, 0);// 1. 清除高位配置
+            rtl8372n_setAsicRegBits(0x7B20u, 0x1F, mode);// 2. 设置模式值
+        }else{
+            rtl8372n_setAsicRegBits(0x7B20u, 0x7C00, 2);// 1. 设置高位默认值
+            rtl8372n_setAsicRegBits(0x7B20u, 0x1F, 0xD);// 2. 设置默认模式值
+        }
+        break;
+    case 1:
+        if(mode){
+            rtl8372n_setAsicRegBits(0x7B20u, 0x1F0000, 0);// 1. 清除高位配置
+            rtl8372n_setAsicRegBits(0x7B20u, 0x3E0, mode);// 2. 设置模式值
+        }else{
+            rtl8372n_setAsicRegBits(0x7B20u, 0x1F0000, 2);// 1. 设置高位默认值
+            rtl8372n_setAsicRegBits(0x7B20u, 0x3E0, 13);// 2. 设置默认模式值
+        }
+        break;
+    case 2:
+        break;
+    default:
+        break;
+    }    
     
-    // === 其他芯片系列处理 ===
-    // 步骤1: 配置模式寄存器 (与RTL8224类似但使用通用函数)
-    // if (mode) {
-    //     // 1.1 特定配置模式
-    //     if (sdsId) {
-    //         // 通道1配置:
-    //         if (sdsId == 1) {
-    //             // 清除高位配置
-    //             rtl8372n_setAsicRegBits(0x7B20, 0x1F0000, 0);
-    //             // 设置模式值
-    //             rtl8372n_setAsicRegBits(0x7B20, 0x3E0, mode);
-    //     }
-    //     } else {
-    //         // 通道0配置:
-    //         // 清除高位配置
-    //         rtl8372n_setAsicRegBits(0x7B20, 0x7C00, 0);
-    //         // 设置模式值
-    //         rtl8372n_setAsicRegBits(0x7B20, 0x1F, mode);
-    //     }
-    // } else {
-    //     // 1.2 默认配置模式
-    //     if (sdsId) {
-    //         // 通道1默认配置:
-    //         if (sdsId == 1) {
-    //             // 设置高位默认值
-    //             rtl8372n_setAsicRegBits(0x7B20u, 0x1F0000u, 2u);
-    //             // 设置默认模式值
-    //             rtl8372n_setAsicRegBits(0x7B20u, 0x3E0u, 13u);
-    //         }
-    //     } else {
-    //         // 通道0默认配置:
-    //         // 设置高位默认值
-    //         rtl8372n_setAsicRegBits(0x7B20u, 0x7C00u, 2u);
-    //         // 设置默认模式值
-    //         rtl8372n_setAsicRegBits(0x7B20u, 0x1Fu, 13u);
-    //     }
-    // }
     
-    rtl8372n_setAsicReg(0x7B20u, 0x3fau); //重要模式参数
+    // rtl8372n_setAsicReg(0x7B20u, 0x3fau); //重要模式参数
 
     // 步骤2: 应用SerDes补丁
     serdes_patch(chip_type, sdsId, mode);
@@ -760,22 +664,22 @@ ret_t serdes_patch(switch_chip_t chip_type, rtk_uint32 sdsId, rtk_uint32 mode)
     if (mode == 0x5u) { // 125M模式
         patch_data_0 = patch_125M;
         patch_size = 78;
-        printk("serdes_patch: patch_125M\n");
+        rtl_debug("serdes_patch: patch_125M\n");
     } 
-    else if (mode == 0x12u) { // 3.125G模式
+    else if (mode == RTL_SDS_MODE_HISGMII) { // 3.125G模式
         patch_data_0 = patch_3P125G;
         patch_size = 78;
-        printk("serdes_patch: patch_3P125G\n");
+        rtl_debug("serdes_patch: patch_3P125G\n");
     } 
-    else if (mode == 0x2u || mode == 0x4u) { // 1.25G模式
+    else if (mode == RTL_SDS_MODE_SGMII || mode == RTL_SDS_MODE_1000BX_FIBER) {
         patch_data_0 = patch_1P25G;
         patch_size = 102;
-        printk("serdes_patch: patch_1P25G\n");
+        rtl_debug("serdes_patch: patch_1P25G\n");
     } 
-    else if (mode == 0u || mode == 0xDu) { // 默认/10.3125G模式
+    else if (mode == 0u || mode == RTL_SDS_MODE_10GR || mode == RTL_SDS_MODE_10GR) {
         patch_data_0 = patch_10P3125G;
         patch_size = 96;
-        printk("serdes_patch: patch_10P3125G\n");
+        rtl_debug("serdes_patch: patch_10P3125G\n");
     } 
     else {
         return RT_ERR_INPUT; // 不支持的配置模式
@@ -821,13 +725,13 @@ ret_t serdes_patch(switch_chip_t chip_type, rtk_uint32 sdsId, rtk_uint32 mode)
     // 应用扩展补丁数据
     for(int i = 0 ;i < (patch_size / 6);i++){
         rtl8372n_sds_reg_write(sdsId, patch_data_0[i].reg, patch_data_0[i].page, patch_data_0[i].val);
-        // printk("serdes_patch: patch_data: reg:%016x\tpage:%016x\tval%016x\n",patch_data_0[i].reg, patch_data_0[i].page, patch_data_0[i].val);
+        // rtl_debug("serdes_patch: patch_data: reg:%016x\tpage:%016x\tval%016x\n",patch_data_0[i].reg, patch_data_0[i].page, patch_data_0[i].val);
     }
     
     // 应用固定补丁序列
     for (int i = 0; i < 8; i++) {
         rtl8372n_sds_reg_write(sdsId, patch_data_mac[i].reg, patch_data_mac[i].page, patch_data_mac[i].val);
-        // printk("serdes_patch: patch_data: reg:%016x\tpage:%016x\tval%016x\n",patch_data_mac[i].reg, patch_data_mac[i].page, patch_data_mac[i].val);
+        // rtl_debug("serdes_patch: patch_data: reg:%016x\tpage:%016x\tval%016x\n",patch_data_mac[i].reg, patch_data_mac[i].page, patch_data_mac[i].val);
     }
     
     return RT_ERR_OK;

@@ -4,9 +4,18 @@
 #include "rtl8372n_types.h"
 #include "rtl8372n_switch.h"
 
+#define RTL_SDS_MODE_SGMII		    0x02
+#define RTL_SDS_MODE_1000BX_FIBER	0x04
+#define RTL_SDS_MODE_QXGMII		    0x0d
+#define RTL_SDS_MODE_HISGMII		0x12
+#define RTL_SDS_MODE_HSG			0x16
+#define RTL_SDS_MODE_10GR		    0x1a
+#define RTL_SDS_MODE_OFF			0x1f
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 extern ret_t rtl8372n_sds_reg_read(rtk_uint32 sdsId, rtk_uint32 sdsReg, rtk_uint32 sdsPage, rtk_uint32 *pvalue);
 extern ret_t rtl8372n_sds_reg_write(rtk_uint32 sdsId, rtk_uint32 sdsReg, rtk_uint32 sdsPage, rtk_uint32 value);
 

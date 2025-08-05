@@ -440,7 +440,7 @@ ret_t RL6818C_pwr_on_patch_phy_v008(rtk_uint32 port_mask)
     port_index++;
     }
     // 打印完成信息
-    printk("RL6818C_pwr_on_patch_phy_v008 , patch 0x%x finished!\n", port_mask);
+    rtl_debug("RL6818C_pwr_on_patch_phy_v008 , patch 0x%x finished!\n", port_mask);
     return result;
 }
 
@@ -667,7 +667,7 @@ rtk_api_ret_t rtk_vlan_init(void)
 {
     rtk_uint32  retVal;
     switch_chip_t   switchChip;
-    printk("Rtl837x Start Init Vlan\n");
+    rtl_debug("Rtl837x Start Init Vlan\n");
     /* probe switch */
     if((retVal = rtk_switch_probe(&switchChip)) != RT_ERR_OK)
         return retVal;
@@ -686,7 +686,7 @@ rtk_api_ret_t rtk_vlan_init(void)
             return RT_ERR_CHIP_NOT_FOUND;
     }
 FINISH:
-    printk("Rtl837x Finish Init Vlan\n");
+    rtl_debug("Rtl837x Finish Init Vlan\n");
     return RT_ERR_OK;
 }
 
@@ -709,7 +709,7 @@ rtk_api_ret_t rtk_switch_init(void)
 {
     rtk_uint32  retVal;
     switch_chip_t   switchChip;
-    printk("Rtl837x Start Init switch\n");
+    rtl_debug("Rtl837x Start Init switch\n");
 
     /* probe switch */
     if((retVal = rtk_switch_probe(&switchChip)) != RT_ERR_OK)
@@ -734,7 +734,7 @@ rtk_api_ret_t rtk_switch_init(void)
     if((retVal = rtk_switch_initialState_set(INIT_COMPLETED)) != RT_ERR_OK)
         return retVal;
 
-    printk("Rtl837x Finish Init switch\n");
+    rtl_debug("Rtl837x Finish Init switch\n");
     return RT_ERR_OK;
 }
 

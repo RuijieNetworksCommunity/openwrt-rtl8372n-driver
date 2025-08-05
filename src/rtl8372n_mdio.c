@@ -181,12 +181,7 @@ ret_t rtl8372n_setup_port_u(void)
 	rtk_uint32 cpu_port_nonzero; // w20
 	cpu_port_nonzero = gsw->cpu_port != 0;
 
-	// rtl8372n_sdsMode_set(0, 0x0u); 
-	rtl8372n_sdsMode_set(0, 0x1Fu); 
-
-	// 步骤3: 延时约8.59毫秒 (等待配置生效)
-	mdelay(10);
-	rtl8372n_sdsMode_set(0, 0x0Du);// 先写死，之后再改
+	rtl8372n_sdsMode_set(0, RTL_SDS_MODE_10GR); 
 
 	// 步骤5: 设置CPU端口为外部端口
 	if ( rtl8372n_cpuTag_externalCpuPort_set(gsw->port_map[gsw->cpu_port]))

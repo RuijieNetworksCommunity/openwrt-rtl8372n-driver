@@ -110,6 +110,8 @@ typedef struct ether_addr_s {
 #define PRINT           rtlglue_printf
 #endif /*_RTL_TYPES_H*/
 
+#define rtl_debug(fmt, ...) printk(fmt, ##__VA_ARGS__)
+
 /* type abstraction */
 #ifdef EMBEDDED_SUPPORT
 
