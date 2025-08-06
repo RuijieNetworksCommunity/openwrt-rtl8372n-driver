@@ -8,8 +8,24 @@ extern "C" {
 #endif
 
 typedef struct {
-    rtk_uint8 data0;
-    rtk_uint8 data1;
+    /*
+    BIT 0 : 10BASE-Te (Half)
+    BIT 1 : 10BASE-Te (Full)
+    BIT 2 : 100BASE-TX (Half) 
+    BIT 3 : 100BASE-TX (Full) 
+
+    BIT 5 : 1000BASE-T full duplex capable
+    BIT 6 : 2.5GBASE-T capable
+    */
+    rtk_uint8 speedDuplexAbility; 
+    /*
+    BIT 0 : ?
+    BIT 1 : advertised pause frames
+    BIT 2 : advertised asymmetric pause frames
+    BIT 3 : ?
+    ......: ?
+    */
+    rtk_uint8 pauseAbility;
 }rtl8372n_autoNegoAbility_t;
 
 extern ret_t rtl8372n_phy_read(rtk_uint32 port_index, rtk_uint32 page, rtk_uint32 reg_addr, rtk_uint32 *pvalue);

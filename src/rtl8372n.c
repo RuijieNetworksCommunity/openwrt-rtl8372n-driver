@@ -62,11 +62,11 @@ int rtl837x_sw_apply_config(struct switch_dev *swdev)
         // 跳过CPU端口和特定端口
         if (port != 0 && port != swdev->cpu_port && port != 5) {
             rtl8372n_autoNegoAbility_t ana;
-            ana.data0 = 0x6Fu;
+            ana.speedDuplexAbility = 0x6Fu;
             if ((0xffff >> port) & 1)
-                ana.data1 = 0xFEu;
+                ana.pauseAbility = 0xFEu;
             else
-                ana.data1 = 0xF8u;
+                ana.pauseAbility = 0xF8u;
             printk("rtl837x rtl8372n_phy_autoNegoAbility_set\n");
             // 设置端口自动协商能力
             ret = rtl8372n_phy_autoNegoAbility_set(gsw->port_map[port], &ana);

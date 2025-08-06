@@ -13,7 +13,6 @@ ret_t rtl8372n_eee_macForceSpeedEn_set(rtk_port_t port, rtk_uint32 uno_1, rtk_ui
     ret_t result; // x0
     if (rtk_switch_logicalPortCheck(port)) return RT_ERR_PORT_ID;
 
-    result = 23LL;
     if ( uno_1 > 8 ) return 23LL;
     if ( enable > 1 ) return RT_ERR_ENABLE;
 
@@ -30,7 +29,6 @@ ret_t rtl8372n_eee_macForceSpeedEn_get(rtk_port_t port, rtk_uint32 uno_1, rtk_ui
     if (rtk_switch_logicalPortCheck(port)) return RT_ERR_PORT_ID;
 
     if (uno_1 > 8) return 23LL;
-
     if (!enabled) return RT_ERR_NULL_POINTER;
     
     result = rtl8372n_getAsicRegBit(4 * port + 0x636C, uno_1, enabled);
@@ -63,8 +61,8 @@ ret_t rtl8372n_eee_portTxRxEn_set(rtk_port_t port, rtk_uint32 tx_enable, rtk_uin
     if (rtk_switch_logicalPortCheck(port)) return RT_ERR_PORT_ID;
 
     // 步骤2: 验证使能标志范围
-    if ( tx_enable > 1 ) return 23LL;
-    if ( rx_enable > 1 ) return 23LL;
+    if ( tx_enable > 1 ) return RT_ERR_ENABLE;
+    if ( rx_enable > 1 ) return RT_ERR_ENABLE;
     
     // 步骤3: 计算EEE控制寄存器地址
     // 寄存器地址 = 4700 + (端口号 * 256)
