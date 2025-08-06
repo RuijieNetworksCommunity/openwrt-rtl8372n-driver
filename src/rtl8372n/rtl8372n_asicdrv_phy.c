@@ -21,8 +21,7 @@
 
 // 其他常量
 #define MAX_RETRY_COUNT      1000    // 最大重试次数
-#define PAGE_30             30
-
+#define REG_SERDES_CONTROL 0x1Eu //30
 
 ret_t rtl8372n_phy_read(rtk_uint32 port_index, rtk_uint32 page, rtk_uint32 reg_addr, rtk_uint32 *pvalue)
 {
@@ -189,7 +188,7 @@ ret_t rtl8372n_phy_writeBits(rtk_uint32 port_mask, rtk_uint32 page, rtk_uint32 r
     rtk_uint32 aligned_value = value << bitsShift;
     
     // 特殊处理页面30 (双寄存器组合)
-    if (page == PAGE_30) {
+    if (page == REG_SERDES_CONTROL) {
         int next_reg = reg_addr + 1; // 高位寄存器地址
         
         // 遍历所有可能的端口 (0-8)
@@ -201,11 +200,11 @@ ret_t rtl8372n_phy_writeBits(rtk_uint32 port_mask, rtk_uint32 page, rtk_uint32 r
             
             //读取当前32位值 (双寄存器组合)
             rtk_uint32 high_value;
-            result = rtl8372n_phy_read(port_index, PAGE_30, next_reg, &high_value);
+            result = rtl8372n_phy_read(port_index, REG_SERDES_CONTROL, next_reg, &high_value);
             if(result != RT_ERR_OK) return result;
             
             rtk_uint32 low_value;
-            result = rtl8372n_phy_read(port_index, PAGE_30, reg_addr, &low_value);
+            result = rtl8372n_phy_read(port_index, REG_SERDES_CONTROL, reg_addr, &low_value);
             if(result != RT_ERR_OK) return result;
 
             // 组合32位值
@@ -219,11 +218,11 @@ ret_t rtl8372n_phy_writeBits(rtk_uint32 port_mask, rtk_uint32 page, rtk_uint32 r
             rtk_uint32 new_low = new_value & 0xFFFF;
             
             // 写入高位寄存器
-            result = rtl8372n_phy_write(1 << port_index, PAGE_30, next_reg, new_high);
+            result = rtl8372n_phy_write(1 << port_index, REG_SERDES_CONTROL, next_reg, new_high);
             if(result != RT_ERR_OK) return result;
             
             // 写入低位寄存器
-            result = rtl8372n_phy_write(1 << port_index, PAGE_30, reg_addr, new_low);
+            result = rtl8372n_phy_write(1 << port_index, REG_SERDES_CONTROL, reg_addr, new_low);
             if(result != RT_ERR_OK) return result;
         }
         
@@ -384,7 +383,6 @@ ret_t rtl8372n_phy_common_c45_an_restart(rtk_uint32 port)
     ret_t result; // x0
     rtk_uint32 reg_val; // [xsp+2Ch] [xbp+2Ch] BYREF
 
-    reg_val = 0;
     result = rtl8372n_phy_read(port, 7, 0, &reg_val);
     if (result != RT_ERR_OK) return result;
 
@@ -428,34 +426,35 @@ ret_t rtl8372n_phy_common_c45_autoNegoEnable_set(rtk_uint32 port, rtk_uint32 ena
     return result;
 }
 
-ret_t rtl8372n_phy_autoNegoAbility_set(rtk_uint32 port, rtk_uint8 *a2)
+ret_t rtl8372n_phy_autoNegoAbility_set(rtk_uint32 port, rtl8372n_autoNegoAbility_t *a2)
 {
-    ret_t result; // x0
-    rtk_uint32 port_mask; // x22
-    int reg_value; // [xsp+3Ch] [xbp+3Ch] BYREF
+    ret_t result = 0; // x0
+    rtk_uint32 port_mask = 0x1u << port; // x22
+    rtk_uint32 reg_value; // [xsp+3Ch] [xbp+3Ch] BYREF
+    const rtk_uint32 REG_AUTO_NEGOTIATION = 0x07u;
+    const rtk_uint32 REG_PHY_CONTROL = 0x1fu;
 
-    reg_value = 0;
-    result = rtl8372n_phy_read(port, 7, 16, &reg_value);
+    result = rtl8372n_phy_read(port, REG_AUTO_NEGOTIATION, 0x10u, &reg_value);
     if (result != RT_ERR_OK) return result;
 
-    port_mask = 1LL << port;
-    reg_value = ((a2[1] << 9) & 0xC00) | (32 * (a2[0] & 0xF)) | (reg_value & 0xFFFFF21F);
-
-    result = rtl8372n_phy_write(port_mask, 7, 16, reg_value);
+    reg_value = (((rtk_uint32)a2->data1 << 9) & 0xC00) | (((rtk_uint32)a2->data0 & 0xF) << 5) | (reg_value & 0xFFFFF21Fu);
+    result = rtl8372n_phy_write(port_mask, REG_AUTO_NEGOTIATION, 0x10u, reg_value); 
     if (result != RT_ERR_OK) return result;
 
-    result = rtl8372n_phy_read(port, 7, 32, &reg_value);
+
+    result = rtl8372n_phy_read(port, REG_AUTO_NEGOTIATION, 0x20u, &reg_value);
     if (result != RT_ERR_OK) return result;
 
-    reg_value = ((2 * a2[0]) & 0x80) | (reg_value & 0xFFFFEE7F);
-    result = rtl8372n_phy_write(port_mask, 7, 32, reg_value);
+    reg_value = (((rtk_uint32)a2->data0 << 1) & 0x80) | (reg_value & 0xFFFFEE7Fu);
+    result = rtl8372n_phy_write(port_mask, REG_AUTO_NEGOTIATION, 0x20u, reg_value);
     if (result != RT_ERR_OK) return result;
 
-    result = rtl8372n_phy_read(port, 31, 42002, &reg_value);
+
+    result = rtl8372n_phy_read(port, REG_PHY_CONTROL, 0xA412u, &reg_value);
     if (result != RT_ERR_OK) return result;
 
-    reg_value = ((16 * a2[0]) & 0x200) | (reg_value & 0xFFFFFDFF);
-    result = rtl8372n_phy_write(port_mask, 31, 42002, reg_value);
+    reg_value = (((rtk_uint32)a2->data0 << 4) & 0x200) | (reg_value & 0xFFFFFDFFu);
+    result = rtl8372n_phy_write(port_mask, REG_PHY_CONTROL, 0xA412u, reg_value);
     if (result != RT_ERR_OK) return result;
 
     result = rtl8372n_phy_common_c45_an_restart(port);
@@ -467,11 +466,11 @@ ret_t rtl8372n_phy_autoNegoAbility_set(rtk_uint32 port, rtk_uint8 *a2)
 ret_t rtl8372n_phy_conmmon_c45_autoSpeed_set(rtk_uint32 port, rtk_uint8 *a2)
 {
     ret_t result; // x0
-    rtk_uint8 v5[2]; // [xsp+28h] [xbp+28h] BYREF
+    rtl8372n_autoNegoAbility_t v5; // [xsp+28h] [xbp+28h] BYREF
 
     rtk_uint8 v3 = a2[0];
 
-    v5[0] = (v3 & 1) | 
+    v5.data0 = (v3 & 1) | 
         ((2 * ((v3 & 2) != 0LL)) & 0x03) | 
         ((4 * ((v3 & 4) != 0LL)) & 0x07) | 
         ((8 * ((v3 & 8) != 0LL)) & 0xF) | 
@@ -480,13 +479,13 @@ ret_t rtl8372n_phy_conmmon_c45_autoSpeed_set(rtk_uint32 port, rtk_uint8 *a2)
         ((((v3 & 0x40) != 0LL) << 6) & 0x7F) | 
         (((v3 & 0x80) != 0LL) << 7);
 
-    v5[1] = (a2[1] & 1) |
+    v5.data1 = (a2[1] & 1) |
             ((2 * ((a2[1] & 2) != 0LL)) & 0xFB) |
             (4 * ((a2[1] & 4) != 0LL));
     result = rtl8372n_phy_common_c45_autoNegoEnable_set(port, 1LL);
     if (result != RT_ERR_OK) return result;
 
-    result =  rtl8372n_phy_autoNegoAbility_set(port, v5);
+    result =  rtl8372n_phy_autoNegoAbility_set(port, &v5);
     if (result != RT_ERR_OK) return result;
 
     return RT_ERR_OK;

@@ -6,6 +6,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef struct {
+    rtk_uint8 data0;
+    rtk_uint8 data1;
+}rtl8372n_autoNegoAbility_t;
+
 extern ret_t rtl8372n_phy_read(rtk_uint32 port_index, rtk_uint32 page, rtk_uint32 reg_addr, rtk_uint32 *pvalue);
 extern ret_t rtl8372n_phy_write(rtk_uint32 port_mask, rtk_uint32 page, rtk_uint32 reg_addr, rtk_uint32 value);
 
@@ -21,7 +27,7 @@ extern rtk_uint32 uc2_sram_read_8b(rtk_uint32 port, rtk_uint32 addr);
 extern ret_t uc2_sram_write_8b(rtk_uint32 port, rtk_uint32 addr, rtk_uint32 value);
 extern ret_t data_ram_write_8b(rtk_uint8 port, rtk_uint32 addr, rtk_uint32 value);
 
-extern ret_t rtl8372n_phy_autoNegoAbility_set(rtk_uint32 port, rtk_uint8 *a2);
+extern ret_t rtl8372n_phy_autoNegoAbility_set(rtk_uint32 port, rtl8372n_autoNegoAbility_t *a2);
 extern ret_t rtl8372n_phy_conmmon_c45_autoSpeed_set(rtk_uint32 port, rtk_uint8 *a2);
 extern ret_t rtl8372n_phy_common_c45_autoNegoEnable_set(rtk_uint32 port, rtk_uint32 enable);
 extern ret_t rtl8372n_phy_common_c45_autoNegoEnable_get(rtk_uint32 port, rtk_uint32 *enable);

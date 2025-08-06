@@ -53,26 +53,30 @@ int rtl837x_sw_apply_config(struct switch_dev *swdev)
     struct rtk_gsw *gsw = container_of(swdev, struct rtk_gsw, sw_dev);
 
     int ret = 0;
+
+	printk("rtl837x Apply Config\n");
     
 	// TODO
-    // // ====================== 1. 应用流控配置 ======================
-    // for (int port = 0; port < swdev->ports; port++) {
-    //     // 跳过CPU端口和特定端口
-    //     if (port != 0 && port != swdev->cpu_port && port != 5) {
-    //         rtk_uint8 ability[2];
-    //         ability[0] = (drv->flow_control_map & (1 << port)) ? 
-    //                     PORT_ABILITY_FC_BOTH : PORT_ABILITY_FC_NONE;
-            
-    //         // 设置端口自动协商能力
-    //         ret = rtl8372n_phy_autoNegoAbility_set(drv->port_mapping[port], &ability);
-    //         if (ret) {
-    //             dev_err(drv->dev, "端口 %d 流控配置失败: %d", port, ret);
-    //             return ret;
-    //         }
-    //     }
-    // }
+    // ====================== 1. 应用流控配置 ======================
+    for (int port = 0; port < gsw->num_ports; port++) {
+        // 跳过CPU端口和特定端口
+        if (port != 0 && port != swdev->cpu_port && port != 5) {
+            rtl8372n_autoNegoAbility_t ana;
+            ana.data0 = 0x6Fu;
+            if ((0xffff >> port) & 1)
+                ana.data1 = 0xFEu;
+            else
+                ana.data1 = 0xF8u;
+            printk("rtl837x rtl8372n_phy_autoNegoAbility_set\n");
+            // 设置端口自动协商能力
+            ret = rtl8372n_phy_autoNegoAbility_set(gsw->port_map[port], &ana);
+            if (ret) {
+                dev_err(gsw->dev, "端口 %d 流控配置失败: %d", port, ret);
+                return ret;
+            }
+        }
+    }
     
-	printk("rtl837x Apply Config\n");
 
     // ====================== 2. 应用VLAN配置 ======================
     if (gsw->global_vlan_enable)

@@ -120,8 +120,6 @@
 /* Port definition*/
 #define RTK_MAX_LOGICAL_PORT_ID                             (rtk_switch_maxLogicalPort_get())
 
-#define rtl_debug(fmt, ...) printk(fmt, ##__VA_ARGS__)
-
 typedef enum switch_chip_e
 {
     CHIP_RTL8373 = 0,
