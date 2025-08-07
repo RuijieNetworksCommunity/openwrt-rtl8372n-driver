@@ -44,7 +44,7 @@ typedef struct rtk_gsw {
 
 	char buf[4096];
 
-	uint32_t flow_control_map;      // 流控配置位图
+	uint16_t flow_control_map;      // 流控配置位图
     uint8_t global_vlan_enable;              // VLAN 是否启用	//你为什么会越界访问sw_dev?????   WHY? Tell Me! WHY!!!! Looking! MY EYES! Tell ME!
     
     struct {
