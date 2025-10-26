@@ -505,13 +505,14 @@ static rtk_api_ret_t _rtk_switch_init_8372n(void)
     rtl8372n_setAsicRegBits(0x6334u, 0xF0u, 0xFu);    // 0x6334[7:4] 置位 (1111)
     rtl8372n_setAsicRegBits(0x6454u, 0x7000u, 7u);    // 0x6454[14:12] 设置为7 (111)
 
-    rtl8372n_sds_regbits_write(0, 0, 0, 0x200, 1);
-    rtl8372n_sds_regbits_write(1, 0, 0, 0x200, 1);
-    rtl8372n_sds_regbits_write(0, 6, 2, 0x2000, 1);
-    rtl8372n_sds_regbits_write(1, 6, 2, 0x2000, 1);
+    // rtl8372n_sds_regbits_write(0, 0, 0, 0x200, 1); //sds PN swap
+    // rtl8372n_sds_regbits_write(0, 6, 2, 0x2000, 1);
 
-    rtl8373_setAsicRegBits(0xA90, 0xF, 0xC);
-    rtl8373_setAsicRegBits(0xA94, 0xFFFF, 0x596A);
+    // rtl8372n_sds_regbits_write(1, 0, 0, 0x200, 1);
+    // rtl8372n_sds_regbits_write(1, 6, 2, 0x2000, 1);
+
+    // rtl8373_setAsicRegBits(0xA90, 0xF, 0xC); //MDI_REVERSE
+    // rtl8373_setAsicRegBits(0xA94, 0xFFFF, 0x596A); //TX_POLARITY_SWAP
 
     // 硬件复位序列
     fw_reset_flow_tgr(1);                       // 启动复位
