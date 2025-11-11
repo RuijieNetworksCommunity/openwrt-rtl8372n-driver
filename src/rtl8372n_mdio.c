@@ -322,16 +322,15 @@ static int rtl837x_gsw_probe(struct platform_device *pdev)
 	struct device_node *mdio;
 	struct mii_bus *mdio_bus;
 	struct rtk_gsw *gsw;
-	struct device_node *ethernet;
+	// struct device_node *ethernet;
 	int ret;
 	dev_info(&pdev->dev,"start rtl837x_gsw_probe");
-	mdio = of_parse_phandle(np, "mediatek,mdio", 0);
+	mdio = of_parse_phandle(np, "rtl837x,mdio", 0);
 
 	if (!mdio)
 		return -EINVAL;
 
 	mdio_bus = of_mdio_find_bus(mdio);
-
 	if (!mdio_bus)
 		return -EPROBE_DEFER;
 
@@ -341,39 +340,45 @@ static int rtl837x_gsw_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 	gsw->dev = &pdev->dev;
-
 	gsw->bus = mdio_bus;
 
-	ethernet = of_parse_phandle(np, "ethernet", 0);
-	if (!ethernet) 
-		return -EINVAL;
-	gsw->ethernet_master = of_find_net_device_by_node(ethernet);
-	if (!gsw->ethernet_master)
-		return -EPROBE_DEFER;
+	// ethernet = of_parse_phandle(np, "ethernet", 0);
+	// if (!ethernet) 
+	// 	return -EINVAL;
+	// gsw->ethernet_master = of_find_net_device_by_node(ethernet);
+	// if (!gsw->ethernet_master)
+	// 	return -EPROBE_DEFER;
 
-	of_property_read_u32(np, "smi-addr", &(gsw->smi_addr));
-	of_property_read_u32(np, "cpu-port", &(gsw->cpu_port));
-	of_property_read_string(np, "serdes-mode", &(gsw->serdes_mode)); //没有用到 后续修复
+	if (of_property_read_u32(np, "rtl837x,smi-addr", &gsw->smi_addr))
+		gsw->smi_addr = 0x1d;
 
-	gsw->reset_pin = of_get_named_gpio(np, "mediatek,reset-pin", 0);
+	if (of_property_read_u32(np, "rtl837x,cpu-port", &gsw->cpu_port)) {
+		dev_err(gsw->dev, "failed to get cpu port\n");
+		devm_kfree(&pdev->dev, gsw);
+		return ret;
+	}
+
+	// of_property_read_string(np, "serdes-mode", &(gsw->serdes_mode)); //没有用到 后续修复
+
+	gsw->reset_pin = of_get_named_gpio(np, "rtl837x,reset-pin", 0);
 	if (gsw->reset_pin >= 0) {
-		ret = devm_gpio_request(gsw->dev, gsw->reset_pin, "mediatek,reset-pin");
+		ret = devm_gpio_request(gsw->dev, gsw->reset_pin, "rtl837x,reset-pin");
 		if (ret)
-			printk("fail to devm_gpio_request mediatek,reset-pin\n");
+			printk("fail to devm_gpio_request rtl837x,reset-pin\n");
 	}
 
-	gsw->irq_pin = of_get_named_gpio(np, "irq-gpios", 0);
-	if (gsw->irq_pin >= 0) {
-		ret = devm_gpio_request(gsw->dev, gsw->irq_pin, "irq-gpios");
-		if (ret)
-			printk("fail to devm_gpio_request irq-gpios\n");
-	}
+	// gsw->irq_pin = of_get_named_gpio(np, "irq-gpios", 0);
+	// if (gsw->irq_pin >= 0) {
+	// 	ret = devm_gpio_request(gsw->dev, gsw->irq_pin, "irq-gpios");
+	// 	if (ret)
+	// 		printk("fail to devm_gpio_request irq-gpios\n");
+	// }
 
-	gsw->irq = gpiod_to_irq(gpio_to_desc(gsw->irq_pin));
-	if (gsw->irq < 0) {
-		dev_err(gsw->dev, "Couldn't gpiod_to_irq\n");
-		return gsw->irq;
-	}
+	// gsw->irq = gpiod_to_irq(gpio_to_desc(gsw->irq_pin));
+	// if (gsw->irq < 0) {
+	// 	dev_err(gsw->dev, "Couldn't gpiod_to_irq\n");
+	// 	return gsw->irq;
+	// }
 
 	gsw->mib_counters = rtl837x_mib_counters;
 	gsw->num_mib_counters = ARRAY_SIZE(rtl837x_mib_counters);
