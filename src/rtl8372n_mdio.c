@@ -215,7 +215,7 @@ static int rtl8372n_hw_init(void)
 		.untag = 0,
 		.fid = 0,
 		.leaky = 0,
-		.enable = 0,
+		.ivl_svl = 0,
 	};
 
 	res = rtl8372n_vlan_set(1u,&vlan_config);

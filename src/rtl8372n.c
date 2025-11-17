@@ -98,7 +98,7 @@ int rtl837x_sw_apply_config(struct switch_dev *swdev)
                     .untag = gsw->vlan_table[vlan_id].untag,
 					.leaky = 0,
 					.fid = 0,
-					.enable = 1,
+					.ivl_svl = 1,
                 };
 				printk("rtl837x VLAN mbr:%u\tntag:%u\n",vlan_cfg.mbr, vlan_cfg.untag);
                 
@@ -169,10 +169,10 @@ int rtl837x_sw_get_vlan_ports_u(struct switch_dev *dev, struct switch_val *val)
     struct rtk_gsw *gsw = container_of(dev, struct rtk_gsw, sw_dev);
 
 	val->len = 0;
-    // if(!(gsw->vlan_table[val->port_vlan].valid)) return 0;
+    if(!(gsw->vlan_table[val->port_vlan].valid)) return 0;
 	rtk_vlan_cfg_t vlan_cfg;
 	if (rtl8372n_vlan_get(val->port_vlan, &vlan_cfg)) return -22;
-    if (!vlan_cfg.enable) return 0; //跳过下面的多余循环
+    if (!vlan_cfg.ivl_svl) return 0; //跳过下面的多余循环
 	// printk("rtl837x vid:%u\tVLAN mbr:%u\tuntag:%u\tfid:%u\n",val->port_vlan ,vlan_cfg.mbr, vlan_cfg.untag, vlan_cfg.fid);
 
 	struct switch_port *port = &val->value.ports[0];

@@ -25,7 +25,7 @@ typedef struct{
     rtk_uint16 untag;      // 未标记端口掩码 (10位)
     rtk_uint16 fid;        // FID (0-15) (未使用)
     rtk_uint16 leaky;      // 泄漏标志 (0-2) (未使用)
-    rtk_uint16 enable;     // 使能标志 (0-2) (未使用)
+    rtk_uint16 ivl_svl;     // 使能标志? (0-2) (未使用)
 }rtl8372n_user_vlan4kentry;
 
 typedef struct{
@@ -39,7 +39,7 @@ typedef struct {
     rtk_uint32 untag;   // 未标记端口掩码
     rtk_uint16 fid;
     rtk_uint16 leaky;               //？
-    rtk_uint16 enable;              // VLAN使能标志
+    rtk_uint16 ivl_svl;              // VLAN使能标志?
 }rtk_vlan_cfg_t;
 
 typedef enum

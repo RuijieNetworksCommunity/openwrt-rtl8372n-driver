@@ -20,12 +20,12 @@ ret_t rtl8372n_setAsicVlan4kEntry(rtl8372n_user_vlan4kentry *vlan_entry)
     if (vlan_entry->fid > 0xF) return RT_ERR_L2_FID;
     
     // 步验证使能标志范围 (0-2)
-    if (vlan_entry->enable > 2) return RT_ERR_INPUT;
+    if (vlan_entry->ivl_svl > 2) return RT_ERR_INPUT;
     
     // 验证泄漏标志范围 (0-2)
     if (vlan_entry->leaky > 2) return RT_ERR_INPUT;
 
-    rtk_uint32 reg_value =  ((vlan_entry->enable & 0x1) << 25) | 
+    rtk_uint32 reg_value =  ((vlan_entry->ivl_svl & 0x1) << 25) | 
                             ((vlan_entry->leaky & 0x1) << 24) | 
                             ((vlan_entry->fid & 0xF) << 20) | 
                             ((vlan_entry->untag & 0x3FF) << 10) | 
@@ -90,7 +90,7 @@ ret_t rtl8372n_getAsicVlan4kEntry(rtl8372n_user_vlan4kentry *vlan_entry)
     vlan_entry->untag = (reg_value >> 10) & 0x3FF;  // 未标记端口掩码 (位10-19)
     vlan_entry->fid = (reg_value >> 20) & 0xF;    // FID (位20-23)
     vlan_entry->leaky = (reg_value >> 24) & 1;      // 泄漏标志 (位24)
-    vlan_entry->enable = (reg_value >> 25) & 1;      // 使能标志 (位25)
+    vlan_entry->ivl_svl = (reg_value >> 25) & 1;      // 使能标志 (位25)
     
     return RT_ERR_OK; // 成功
 }
@@ -245,7 +245,7 @@ ret_t rtl8372n_vlan_init(void)
         .untag = rtk_switch_phyPortMask_get(),
         .fid = 0,
         .leaky = 0,
-        .enable = 0
+        .ivl_svl = 0
     };
 
     // 设置默认vlan 1
@@ -420,7 +420,7 @@ ret_t rtl8372n_vlan_get(rtk_uint32 vlan_id, rtk_vlan_cfg_t *config)
     config->fid = query_entry.fid;
 
     config->leaky = query_entry.leaky;
-    config->enable = query_entry.enable;
+    config->ivl_svl = query_entry.ivl_svl;
     
     return 0; // 成功
 }
@@ -446,7 +446,7 @@ ret_t rtl8372n_vlan_set(rtk_uint32 vlan_id, rtk_vlan_cfg_t *config)
     if (config->fid > 0xF) return RT_ERR_L2_FID;
     
     // 步验证使能标志范围 (0-2)
-    if (config->enable > 2) return RT_ERR_INPUT;
+    if (config->ivl_svl > 2) return RT_ERR_INPUT;
     
     // 验证泄漏标志范围 (0-2)
     if (config->leaky > 2) return RT_ERR_INPUT;
@@ -457,7 +457,7 @@ ret_t rtl8372n_vlan_set(rtk_uint32 vlan_id, rtk_vlan_cfg_t *config)
         .untag = config->untag & 0x3FF,  // 10位端口掩码
         .fid = config->fid & 0xF,        // 4位FID
         .leaky = config->leaky & 1,      // 1位泄漏标志
-        .enable = config->enable & 1     // 1位使能标志
+        .ivl_svl = config->ivl_svl & 1     // 1位使能标志
     };
 
     // 设置VLAN 4K表项
